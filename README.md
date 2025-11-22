@@ -1,5 +1,5 @@
 # 🧩 Scrabble — Console C++ Game  
-Created by **CMDevs** <img src="images/logo.png" width="120"/>
+Created by **CMDevs** <img src="images/logo.png" width="500" lenght="500"/>
 
 ## 🎮 About the Project
 Scrabble is a classic word-building game where players create words on a board to earn points.  
