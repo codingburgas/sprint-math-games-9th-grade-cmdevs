@@ -1,1 +1,20 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/durmtwmj)
+# 🧩 Scrabble — Console C++ Game  
+Created by **CMDevs** <img src="/mnt/data/image-removebg-preview_23.png" width="120"/>
+
+## 🎮 About the Project
+Scrabble is a classic word-building game where players create words on a board to earn points.  
+Our team — **CMDevs** — decided to recreate the core mechanics of Scrabble using **pure C++** with fully **console-based output**.
+
+This project was developed as a part of our school programming initiative to improve our understanding of:
+- data structures  
+- word validation algorithms  
+- console UI mechanics  
+- teamwork & collaborative software development  
+
+## ✨ Features
+- 🔤 Word creation and validation  
+- 🧠 Letter scoring system  
+- 🎲 Random tile distribution  
+- 🖥️ Clean console-based interface  
+- 👥 Designed for local multiplayer  
+- 📦 Lightweight and easy to compile  
