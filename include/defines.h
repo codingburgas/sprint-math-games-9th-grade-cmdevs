@@ -4,6 +4,11 @@
 #define FOREGROUND_INDEX 0
 #define BACKGROUND_INDEX 1
 
+#define CONTROL(x) x-96
+
+#define COORDSX(x) (term_maxx/2-7+x)
+#define COORDSY(y) (term_maxy/2-7+y)
+
 #define BLACK 0
 #define BLUE 1
 #define GREEN 2
