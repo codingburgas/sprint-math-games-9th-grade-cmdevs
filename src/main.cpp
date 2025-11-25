@@ -1,12 +1,18 @@
 #include <iostream>
 #include <vector>
 #include <cstdint>
+#include <cstdlib>
 
 #include "../include/ui.h"
 #include "../include/wordparser.h"
 #include "../include/defines.h"
 
 using namespace std;
+
+char generateRandomLetter()
+{
+	return 'a' + (double)rand()/RAND_MAX*26; // 26 letters in the alphabet. rand() should provide random enough numbers
+}
 
 int main()
 {
@@ -15,6 +21,15 @@ int main()
 	int points = 0, pointsToWin; // define pointsToWin
 
 	char playfield[15][15];
+
+	char letters[100];
+
+	// randomise letters
+	
+	for (int i = 0; i < 100; ++i)
+		letters[i] = generateRandomLetter();
+	
+	// todo: display the letters (first or random 7)
 
 	// clear field
 
@@ -38,6 +53,8 @@ int main()
 	short term_maxx, term_maxy;
 
 	term_getTermSize(term_maxx, term_maxy);
+
+	// move cursor to top left of the playfield
 
 	term_moveCursor(COORDSX(0), COORDSY(0));
 
@@ -69,12 +86,11 @@ int main()
 			case 'a'...'z':
 			{
 				playfield[x][y] = input;
-				// do word check
+				// todo: word check
 				break;
 			}
 			default: break;
 		}
-		
 		term_moveCursor(COORDSX(x), COORDSY(y));
 	}
 
