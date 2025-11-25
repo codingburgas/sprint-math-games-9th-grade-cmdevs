@@ -1,19 +1,15 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <string>
 
 using namespace std;
 
-vector<string> parse(string filename, bool& fileFound)
+bool parse(string filename, vector<string>& wordList)
 {
 	fstream wordListFile(filename);
-	if (!wordListFile.good())
-	{
-		fileFound = 0;
-		return 0;
-	}
 
-	vector<string> wordList;
+	if (!wordListFile.good()) return 1;
 
 	string word;
 
@@ -24,5 +20,5 @@ vector<string> parse(string filename, bool& fileFound)
 		word.clear();
 	}
 
-	return wordList;
+	return 0;
 }

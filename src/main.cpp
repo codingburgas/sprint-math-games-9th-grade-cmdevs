@@ -10,13 +10,13 @@ using namespace std;
 
 int main()
 {
-	bool fileFound;
-
 	uint8_t input, x = 0, y = 0;
 
 	int points = 0, pointsToWin; // define pointsToWin
 
 	char playfield[15][15];
+
+	// clear field
 
 	for (int x = 0; x<15; ++x)
 	{
@@ -26,13 +26,18 @@ int main()
 		}
 	}
 
-	vector<string> wordList = parse("words", fileFound);
-	if (!fileFound)
+	vector<string> wordList;
+	if (parse("words", wordList))
 	{
-		cout << "The word list file wasn't found, exiting...";
+		cout << "Word list not found, exiting...\n";
+		return 1;
 	}
 
 	term_init();
+
+	short term_maxx, term_maxy;
+
+	term_getTermSize(term_maxx, term_maxy);
 
 	term_moveCursor(COORDSX(0), COORDSY(0));
 

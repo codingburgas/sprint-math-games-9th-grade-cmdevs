@@ -75,7 +75,7 @@ uint8_t term_getch()
 
 void term_moveCursor(short x, short y)
 {
-	COORD size = {(short)x, (short)y};
+	COORD size = {x, y};
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), size);
 }
 
@@ -106,19 +106,19 @@ void term_resetColorPair()
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE + (BLACK<<4));
 }
 
-void term_getTermSize(short *x, short *y)
+void term_getTermSize(short& x, short& y)
 {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    *x = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    *y = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    x = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    y = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 }
 
 void term_clear()
 {
 	short x, y;
 	LPDWORD counter;
-	term_getTermSize(&x, &y);
+	term_getTermSize(x, y);
 
 	FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', ((int)x)*y, {0,0}, counter);
 }

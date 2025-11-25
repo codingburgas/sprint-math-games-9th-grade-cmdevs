@@ -2,6 +2,7 @@
 #define UI_H
 
 #include "defines.h"
+#include "keycodes.h"
 
 typedef uint8_t color_t;
 
@@ -13,6 +14,6 @@ void term_moveCursor(short x, short y);
 uint8_t term_createColorPair(color_t foreground, color_t background);
 void term_enableColorPair(uint8_t colorPairIndex);
 void term_resetColorPair();
-void term_getTermSize(short *x, short *y);
+void term_getTermSize(short& x, short& y);
 
 #endif

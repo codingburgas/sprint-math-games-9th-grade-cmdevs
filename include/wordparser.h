@@ -2,7 +2,10 @@
 #define WORDPARSER_H
 
 #include <vector>
+#include <string>
 
-vector<string> parse(string filename, bool& fileFound);
+using namespace std;
+
+int parse(string filename, vector<string>& wordList);
 
 #endif
