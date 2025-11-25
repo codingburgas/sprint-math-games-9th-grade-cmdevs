@@ -7,9 +7,10 @@ using namespace std;
 
 bool parse(string filename, vector<string>& wordList)
 {
-	fstream wordListFile(filename);
+	fstream wordListFile{filename};
 
-	if (!wordListFile.good()) return 1;
+
+	if (!wordListFile.is_open()) return 1;
 
 	string word;
 

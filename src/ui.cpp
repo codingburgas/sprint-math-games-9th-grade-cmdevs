@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <cstdarg>
+#include <iostream>
 
 #include "../include/keycodes.h"
 #include "../include/defines.h"
@@ -33,6 +34,7 @@ void term_deinit()
 {
 	term_resetColorPair();
 	term_clear();
+	term_moveCursor(0,0);
 }
 
 uint8_t term_getch()
@@ -108,17 +110,19 @@ void term_resetColorPair()
 
 void term_getTermSize(short& x, short& y)
 {
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    x = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    y = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufferInfo);
+	x = bufferInfo.dwSize.X;
+	y = bufferInfo.dwSize.Y;
 }
 
 void term_clear()
 {
 	short x, y;
-	LPDWORD counter;
+	DWORD counter;
 	term_getTermSize(x, y);
-
-	FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', ((int)x)*y, {0,0}, counter);
+	--x; // no stack overflow
+	--y;
+	FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', ((int)x)*y, {0,0}, &counter);
+	term_moveCursor(0,0);
 }

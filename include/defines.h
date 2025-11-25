@@ -4,7 +4,7 @@
 #define FOREGROUND_INDEX 0
 #define BACKGROUND_INDEX 1
 
-#define CONTROL(x) x-96
+#define CONTROL(x) x-64
 
 #define COORDSX(x) (term_maxx/2-7+x)
 #define COORDSY(y) (term_maxy/2-7+y)
