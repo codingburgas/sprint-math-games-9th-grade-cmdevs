@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 #include "../include/ui.h"
 #include "../include/wordparser.h"
@@ -11,6 +12,10 @@ using namespace std;
 
 // letter points from a to z
 const int letterPoints[26] = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
+const int doubleWordPoints[17][2] = { {1,1}, {2,2}, {3,3}, {4,4}, {7,7}, {10,10}, {11,11}, {12,12}, {13,13}, {13,1}, {12,2}, {11,3}, {10,4}, {4,10}, {3,11}, {2,12}, {1,13} };
+const int tripleWordPoints[8][2] = { {0,0}, {14,0}, {0,14}, {14,14}, {0,7}, {7,0}, {14,7}, {7,14} };
+const int doubleLetterPoints[24][2] = { {3,0}, {11,0}, {6,2}, {8,2}, {0,3}, {7,3}, {14,3}, {2,6}, {6,6}, {8,6}, {12,6}, {3,7}, {11,7}, {2,8}, {6,8}, {8,8}, {12,8}, {0,11}, {7,11}, {13,11}, {6,12}, {8,12}, {3,14}, {11,14} };
+const int tripleLetterPoints[12][2] = { {5,1}, {9,1}, {1,5}, {5,5}, {9,5}, {13,5}, {1,9}, {5,9}, {9,9}, {13,9}, {5,13}, {9,13} };
 
 void putLetters(vector<char>& letters)
 {
@@ -92,6 +97,34 @@ int findLetter(char letter, char letters[6])
 	return -1;
 }
 
+inline int containsWord(string word, char str[15], int letterindex)
+{
+	bool containsLetter = 0, found = 0;
+	int offset;
+	for (int i = 0; i+word.length()<strlen(str); ++i)
+	{
+		if (word[0]==str[i])
+		{
+			offset = i;
+			found = 1;
+			++i;
+			for (; i<word.length(); ++i)
+			{
+				if (str[i]!=word[i-offset])
+				{
+					found = 0;
+					break;
+				}	
+			}
+			if (found)
+			{
+				return offset;
+			}
+		}
+	}
+	return 0;
+}
+
 int checkword(int placedx, int placedy, const char board[14][14], vector<string> wordList)
 {
 	int addedPoints = 0;
@@ -101,41 +134,101 @@ int checkword(int placedx, int placedy, const char board[14][14], vector<string>
 	char wordColumn[15], wordRow[15];
 	bool valid = 0;
 
+	int offsetx = 0, offsety = 0;
+
 	// row
-	for (int i = 0, offset = 0; i<15; ++i)
+	for (int i = 0; i<15; ++i)
 	{
-		if (board[i][placedy]&&!offset) offset = i;
-		if (offset)
+		if (board[i][placedy]&&!offsetx) offsetx = i;
+		if (offsetx)
 		{
 			while(i<15&&board[i][placedy])
 			{
 				if (i==placedx) valid = 1;
-				wordRow[i-offset] = board[i][placedy];
+				wordRow[i-offsetx] = board[i][placedy];
 				++i;
 			}
-			wordRow[i-offset] = 0;
-			offset = 0;
+			wordRow[i-offsetx] = 0;
 			if (valid) break;
+			offsetx = 0;
 		}
 	}
 
-	// todo: word check from wordList and special tiles
-	
 	// column
-	for (int i = 0, offset = 0; i<15; ++i)
+	for (int i = 0; i<15; ++i)
 	{
-		if (board[placedx][i]&&!offset) offset = i;
-		if (offset)
+		if (board[placedx][i]&&!offsety) offsety = i;
+		if (offsety)
 		{
 			while(i<15&&board[placedx][i])
 			{
 				if (i==placedy) valid = 1;
-				wordColumn[i-offset] = board[placedx][i];
+				wordColumn[i-offsety] = board[placedx][i];
 				++i;
 			}
-			wordColumn[i-offset] = 0;
-			offset = 0;
+			wordColumn[i-offsety] = 0;
 			if (valid) break;
+			offsety = 0;
+		}
+	}
+
+	int offset;
+
+	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordRow); ++i)
+	{
+		if ((offset=containsWord(wordList[i], wordRow, placedx-offsetx))>0)
+		{
+			// base points
+			for (int b = 0; b<wordList[i].length(); ++i)
+				addedPoints += getLetterPoints(wordList[i][b]);
+
+			for (int b = 0; b<wordList[i].length(); ++i)
+			{
+				for (int x = 0; x<24; ++x)
+					if (doubleLetterPoints[x][0] == offsetx+b && doubleLetterPoints[x][1] == placedy)
+						addedPoints += getLetterPoints(wordList[i][b]);
+
+				for (int x = 0; x<12; ++x)
+					if (tripleLetterPoints[x][0] == offsetx+b && tripleLetterPoints[x][1] == placedy)
+						addedPoints += getLetterPoints(wordList[i][b])*2;
+
+				for (int x = 0; x<17; ++x)
+					if (doubleWordPoints[x][0] == offsetx+b && doubleWordPoints[x][1] == placedy)
+						addedPoints *= 2;
+
+				for (int x = 0; x<8; ++x)
+					if (tripleWordPoints[x][0] == offsetx+b && tripleWordPoints[x][1] == placedy)
+						addedPoints *= 3;
+			}
+		}
+	}
+
+	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordColumn); ++i)
+	{
+		if ((offset=containsWord(wordList[i], wordColumn, placedy-offsety))>0)
+		{
+			// base points
+			for (int b = 0; b<wordList[i].length(); ++i)
+				addedPoints += getLetterPoints(wordList[i][b]);
+
+			for (int b = 0; b<wordList[i].length(); ++i)
+			{
+				for (int x = 0; x<24; ++x)
+					if (doubleLetterPoints[x][1] == offsety+b && doubleLetterPoints[x][0] == placedx)
+						addedPoints += getLetterPoints(wordList[i][b]);
+
+				for (int x = 0; x<12; ++x)
+					if (tripleLetterPoints[x][1] == offsety+b && tripleLetterPoints[x][0] == placedx)
+						addedPoints += getLetterPoints(wordList[i][b])*2;
+
+				for (int x = 0; x<17; ++x)
+					if (doubleWordPoints[x][1] == offsety+b && doubleWordPoints[x][0] == placedx)
+						addedPoints *= 2;
+
+				for (int x = 0; x<8; ++x)
+					if (tripleWordPoints[x][1] == offsety+b && tripleWordPoints[x][0] == placedx)
+						addedPoints *= 3;
+			}
 		}
 	}
 
@@ -147,6 +240,8 @@ int main()
 	uint8_t input, x = 0, y = 0;
 
 	int p1Score = 0, pointsToWin; // define pointsToWin (from menu/argument)
+
+	vector<int> positions;
 
 	char playfield[14][14];
 	
@@ -257,7 +352,7 @@ int main()
 				if (x<14) ++x;
 				break;
 			}
-			case 'A'...'Z': tolower(input);
+			case 'A'...'Z': input = tolower(input);
 			case 'a'...'z':
 			{
 				if (findLetter(input, p1Letters)!=-1)
@@ -265,6 +360,10 @@ int main()
 					playfield[x][y] = input;
 					p1Score += checkword(x, y, playfield, wordList);
 				}
+				break;
+			}
+			case 10: case 13: //enter
+			{
 				break;
 			}
 			default: break;
