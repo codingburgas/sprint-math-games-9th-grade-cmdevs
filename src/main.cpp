@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdint>
-#include <cstdlib>
+#include <random>
 #include <cstring>
 
 #include "../include/ui.h"
@@ -235,11 +235,11 @@ int checkword(int placedx, int placedy, const char board[14][14], vector<string>
 	return addedPoints;
 }
 
-int main()
+void game()
 {
-	uint8_t input, x = 0, y = 0;
+	uint8_t input, x = 0, y = 0, lettersRemaining = 100, lettersEntered = 0;
 
-	int p1Score = 0, pointsToWin; // define pointsToWin (from menu/argument)
+	int p1Score = 0; // TODO: define pointsToWin (from menu/argument)
 
 	vector<int> positions;
 
@@ -250,11 +250,13 @@ int main()
 
 	// randomise letters for players
 	
-	char p1Letters[6];
+	// mt19937 mt{}; //_// segfaults with random numbers !_! FIX !_! :(X)D
+	char p1Letters[7];
 	for (int i = 0, id; i<7; ++i)
 	{
-		id = getLetterId();
-		p1Letters[i] = letters.at(id);
+		//id = (double)mt()/(~0)*(lettersRemaining--);
+		id = 93;
+		p1Letters[i] = letters[id];
 		letters.erase(letters.begin()+id);
 	}
 
@@ -272,10 +274,8 @@ int main()
 	if (parse("words", wordList))
 	{
 		cout << "Word list not found, exiting...\n";
-		return 1;
+		return;
 	}
-
-	term_init();
 
 	short term_maxx, term_maxy;
 
@@ -318,7 +318,7 @@ int main()
 
 	for (int i = 0; i<7; ++i)
 	{
-		term_moveCursor(term_maxx/2-17+i*2, term_maxy/2+10);
+		term_moveCursor(term_maxx/2-7+i*2, term_maxy/2+10);
 		COLORPAIR(p1Letters[i]);
 		cout << p1Letters[i];
 		term_resetColorPair();
@@ -357,13 +357,16 @@ int main()
 			{
 				if (findLetter(input, p1Letters)!=-1)
 				{
+					++lettersEntered;
 					playfield[x][y] = input;
-					p1Score += checkword(x, y, playfield, wordList);
 				}
 				break;
 			}
 			case 10: case 13: //enter
 			{
+				for (int i = 0; i<lettersEntered; ++i)
+					// get x and y coordinates
+					p1Score += checkword(/* add x and y coordinates */, playfield, wordList);
 				break;
 			}
 			default: break;
@@ -371,5 +374,20 @@ int main()
 		term_moveCursor(COORDSX(x), COORDSY(y));
 	}
 
+}
+
+int main() // menu
+{
+	term_init();
+
+	short term_maxx, term_maxy;
+
+	term_getTermSize(term_maxx, term_maxy);
+
+	// menu things
+	
+	game();
+
 	term_deinit();
+	return 0;
 }

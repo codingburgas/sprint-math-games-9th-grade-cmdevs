@@ -9,7 +9,7 @@
 #define COORDSX(x) (term_maxx/2-7+x)
 #define COORDSY(y) (term_maxy/2-7+y)
 
-#define getLetterId() (int)((double)rand()/RAND_MAX*100)
+#define getLetterId() (int)((double)mt()/(~0)*100)
 #define getLetterPoints(letter) letter>32?letterPoints[letter-97]:0
 
 #define COLORPAIR(x) term_enableColorPair(colorPairIds[getLetterPoints(x)]);
