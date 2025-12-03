@@ -4,6 +4,7 @@
 #include <random>
 #include <cstring>
 
+
 #include "../include/ui.h"
 #include "../include/wordparser.h"
 #include "../include/defines.h"
@@ -388,12 +389,17 @@ int main() // menu
 	// menu things
 
 	cout << "     ███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗" << endl;
+	Sleep(100);
 	cout << "     ████╗ ████║ ██╔════╝ ████╗  ██║ ██║   ██║" << endl;
+	Sleep(100);
 	cout << "     ██╔████╔██║ █████╗   ██╔██╗ ██║ ██║   ██║" << endl;
+	Sleep(100);
 	cout << "     ██║╚██╔╝██║ ██╔══╝   ██║╚██╗██║ ██║   ██║" << endl;
+	Sleep(100);
 	cout << "     ██║ ╚═╝ ██║ ███████╗ ██║ ╚████║ ╚██████╔╝" << endl;
+	Sleep(100);
 	cout << "     ╚═╝     ╚═╝ ╚══════╝ ╚═╝  ╚═══╝  ╚═════╝" << endl;
-	
+
 	game();
 
 	term_deinit();
