@@ -448,11 +448,11 @@ int main() // menu
 	Sleep(100);
 	cout << "==============================================================" << endl;
 	sleep(1);
-	cout << "                       1) Start️" << endl;
+	cout << "                       1) Start️ " << endl;
 	sleep(1);
-	cout << "                       2) Quit" << endl;
+	cout << "                       2) Quit " << endl;
 	sleep(1);
-	cout << "                       3) Creators"<< endl;
+	cout << "                       3) Creators "<< endl;
 	Sleep(100);
 	cout << "==============================================================" << endl;
 
