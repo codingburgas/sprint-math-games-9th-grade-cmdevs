@@ -380,6 +380,12 @@ int main() // menu
 {
 	term_init();
 
+		cout << "     ███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗" << endl;
+		cout << "     ████╗ ████║ ██╔════╝ ████╗  ██║ ██║   ██║" << endl;
+		cout << "     ██╔████╔██║ █████╗   ██╔██╗ ██║ ██║   ██║" << endl;
+		cout << "     ██║╚██╔╝██║ ██╔══╝   ██║╚██╗██║ ██║   ██║" << endl;
+		cout << "     ██║ ╚═╝ ██║ ███████╗ ██║ ╚████║ ╚██████╔╝" << endl;
+		cout << "     ╚═╝     ╚═╝ ╚══════╝ ╚═╝  ╚═══╝  ╚═════╝" << endl;
 	short term_maxx, term_maxy;
 
 	term_getTermSize(term_maxx, term_maxy);
