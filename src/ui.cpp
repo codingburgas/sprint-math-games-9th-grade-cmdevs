@@ -112,8 +112,8 @@ void term_getTermSize(short& x, short& y)
 {
 	CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufferInfo);
-	x = bufferInfo.dwSize.X;
-	y = bufferInfo.dwSize.Y;
+	x = bufferInfo.srWindow.Right - bufferInfo.srWindow.Left;
+	y = bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top;
 }
 
 void term_clear()
