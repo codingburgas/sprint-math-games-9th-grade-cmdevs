@@ -264,6 +264,7 @@ void fillPlayerLetters(vector<char> letters, char playerLetters[7])
 
 void game()
 {
+	term_clear();
 	uint8_t input, x = 7, y = 7, direction = 0;
 	// directorion 0 - undecided, 1-x, 2-y
 
@@ -409,6 +410,7 @@ void game()
 			case 'A'...'Z': input = tolower(input);
 			case 'a'...'z':
 			{
+				if (playfield[x][y]) break;
 				int8_t letterId;
 				if ((letterId = findLetter(input, p1Letters))!=-1)
 				{
@@ -494,11 +496,11 @@ int main() // menu
 
 	Sleep(100);
 	cout << "==============================================================" << endl;
-	sleep(1);
+	Sleep(1000);
 	cout << "                       1) Start️ " << endl;
-	sleep(1);
+	Sleep(1000);
 	cout << "                       2) Quit " << endl;
-	sleep(1);
+	Sleep(1000);
 	cout << "                       3) Creators "<< endl;
 	Sleep(100);
 	cout << "==============================================================" << endl;
