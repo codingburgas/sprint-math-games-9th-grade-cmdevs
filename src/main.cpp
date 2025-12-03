@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <random>
 #include <cstring>
+#include <ctime>
+
 
 #include "../include/ui.h"
 #include "../include/wordparser.h"
@@ -88,7 +90,7 @@ void putLetters(vector<char>& letters)
 	// END 10 points
 }
 
-int findLetter(char letter, char letters[6])
+int findLetter(char letter, char letters[7])
 {
 	for (int i = 0; i<7; ++i)
 	{
@@ -99,7 +101,7 @@ int findLetter(char letter, char letters[6])
 
 inline int containsWord(string word, char str[15], int letterindex)
 {
-	bool containsLetter = 0, found = 0;
+	bool found = 0;
 	int offset;
 	for (int i = 0; i+word.length()<strlen(str); ++i)
 	{
@@ -125,7 +127,7 @@ inline int containsWord(string word, char str[15], int letterindex)
 	return 0;
 }
 
-int checkword(int placedx, int placedy, const char board[14][14], vector<string> wordList)
+int checkword(int placedx, int placedy, const char board[15][15], vector<string> wordList)
 {
 	int addedPoints = 0;
 
@@ -174,10 +176,12 @@ int checkword(int placedx, int placedy, const char board[14][14], vector<string>
 
 	int offset;
 
+	// Check for words on current row
 	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordRow); ++i)
 	{
-		if ((offset=containsWord(wordList[i], wordRow, placedx-offsetx))>0)
+		if ((offset = containsWord(wordList[i], wordRow, placedx-offsetx))>0)
 		{
+			if (placedx<offset || placedx>offset+wordList[i].length()) continue; // if found word doesn't connect to the letter at placedx,placedy
 			// base points
 			for (int b = 0; b<wordList[i].length(); ++i)
 				addedPoints += getLetterPoints(wordList[i][b]);
@@ -203,10 +207,12 @@ int checkword(int placedx, int placedy, const char board[14][14], vector<string>
 		}
 	}
 
+	// Check for words on current column
 	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordColumn); ++i)
 	{
-		if ((offset=containsWord(wordList[i], wordColumn, placedy-offsety))>0)
+		if ((offset = containsWord(wordList[i], wordColumn, placedy-offsety))>0)
 		{
+			if (placedy<offset || placedy>offset+wordList[i].length()) continue; // if found word doesn't connect to the letter at placedx,placedy
 			// base points
 			for (int b = 0; b<wordList[i].length(); ++i)
 				addedPoints += getLetterPoints(wordList[i][b]);
@@ -235,27 +241,38 @@ int checkword(int placedx, int placedy, const char board[14][14], vector<string>
 	return addedPoints;
 }
 
+void redrawLetters(short term_maxx, short term_maxy, char p1Letters[7], int colorPairIds[11])
+{
+	for (int i = 0; i<7; ++i)
+	{
+		term_moveCursor(term_maxx/2-7+i*2, term_maxy/2+10);
+		COLORPAIR(p1Letters[i]);
+		cout << (p1Letters[i]?p1Letters[i]:' ');
+	}
+	term_resetColorPair();
+}
+
 void game()
 {
-	uint8_t input, x = 0, y = 0, lettersRemaining = 100, lettersEntered = 0;
+	uint8_t input, x = 7, y = 7, lettersRemaining = 100;
 
-	int p1Score = 0; // TODO: define pointsToWin (from menu/argument)
+	int p1Score = 0; // TODO: define pointsToWin (from menu/argument) ; unnecessary if multiplayer will be implemented
 
-	vector<int> positions;
+	vector<uint8_t> positionsx{}, positionsy{};
 
-	char playfield[14][14];
+	char playfield[15][15];
 	
-	vector<char> letters;
+	vector<char> letters{};
 	putLetters(letters);
 
 	// randomise letters for players
 	
-	// mt19937 mt{}; //_// segfaults with random numbers !_! FIX !_! :(X)D
+	mt19937 mt(time(nullptr));
 	char p1Letters[7];
-	for (int i = 0, id; i<7; ++i)
+	// TODO: 2 players
+	for (unsigned int i = 0, id; i<7; ++i)
 	{
-		//id = (double)mt()/(~0)*(lettersRemaining--);
-		id = 93;
+		id = (((double)mt())/(UINT32_MAX))*(lettersRemaining--);
 		p1Letters[i] = letters[id];
 		letters.erase(letters.begin()+id);
 	}
@@ -316,17 +333,11 @@ void game()
 
 	// print letters for p1
 
-	for (int i = 0; i<7; ++i)
-	{
-		term_moveCursor(term_maxx/2-7+i*2, term_maxy/2+10);
-		COLORPAIR(p1Letters[i]);
-		cout << p1Letters[i];
-		term_resetColorPair();
-	}
+	redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
 
-	// move cursor to top left of the playfield
+	// move cursor to the center of the playfield
 
-	term_moveCursor(COORDSX(0), COORDSY(0));
+	term_moveCursor(COORDSX(x), COORDSY(y));
 
 	while ((input = term_getch())!=CONTROL('C'))
 	{
@@ -354,26 +365,59 @@ void game()
 			}
 			case 'A'...'Z': input = tolower(input);
 			case 'a'...'z':
+			case ' ':
 			{
-				if (findLetter(input, p1Letters)!=-1)
+				int8_t letterId;
+				if ((letterId = findLetter(input, p1Letters))!=-1)
 				{
-					++lettersEntered;
+					COLORPAIR(p1Letters[letterId]);
+					cout << p1Letters[letterId];
+					term_resetColorPair();
+					p1Letters[letterId] = 0;
 					playfield[x][y] = input;
+					positionsx.push_back(x);
+					positionsy.push_back(y);
+					redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
+				}
+				break;
+			}
+			case 127: // TODO: add macro; backspace
+			{
+				for (int i = 0; i<positionsx.size(); ++i)
+				{
+					if (positionsx[i]==x&&positionsy[i]==y)
+					{
+						positionsx.erase(positionsx.begin()+i);
+						positionsy.erase(positionsy.begin()+i);
+						for (int8_t b = 0; b<7; ++x)
+						{
+							if (!letters[b])
+							{
+								letters[b] = playfield[x][y];
+								redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
+								playfield[x][y] = 0;
+								break;
+							}
+						}
+						break;
+					}
 				}
 				break;
 			}
 			case 10: case 13: //enter
 			{
-				for (int i = 0; i<lettersEntered; ++i)
-					// get x and y coordinates
-					p1Score += checkword(/* add x and y coordinates */, playfield, wordList);
+				while (positionsx.size())
+				{
+					p1Score += checkword(positionsx[positionsx.size()-1], positionsy[positionsy.size()-1], playfield, wordList);
+					positionsx.pop_back();
+					positionsy.pop_back();
+				}
 				break;
 			}
 			default: break;
 		}
 		term_moveCursor(COORDSX(x), COORDSY(y));
 	}
-
 }
 
 int main() // menu
@@ -385,28 +429,21 @@ int main() // menu
 
 	term_getTermSize(term_maxx, term_maxy);
 
+	if (term_maxx<50||term_maxy<25) return -1;
+
 	// menu things
 
 	cout << "     ███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗" << endl;
+	Sleep(100);
 	cout << "     ████╗ ████║ ██╔════╝ ████╗  ██║ ██║   ██║" << endl;
+	Sleep(100);
 	cout << "     ██╔████╔██║ █████╗   ██╔██╗ ██║ ██║   ██║" << endl;
+	Sleep(100);
 	cout << "     ██║╚██╔╝██║ ██╔══╝   ██║╚██╗██║ ██║   ██║" << endl;
+	Sleep(100);
 	cout << "     ██║ ╚═╝ ██║ ███████╗ ██║ ╚████║ ╚██████╔╝" << endl;
+	Sleep(100);
 	cout << "     ╚═╝     ╚═╝ ╚══════╝ ╚═╝  ╚═══╝  ╚═════╝" << endl;
-
-
-	Sleep(100);
-	cout << "==============================================================" << endl;
-	sleep(1);
-	cout << "                       1) еуые1🙋‍♂️" << endl;
-	sleep(1);
-	cout << "                       2) еуые2🙋‍♂️" << endl;
-	sleep(1);
-	cout << "                       3) еуые3🙋‍♂️"<< endl;
-	Sleep(100);
-	cout << "==============================================================" << endl;
-
-
 
 	game();
 
