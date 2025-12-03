@@ -4,7 +4,7 @@
 #include <random>
 #include <cstring>
 #include <ctime>
-
+#include <windows.h>
 
 #include "../include/ui.h"
 #include "../include/wordparser.h"
@@ -21,10 +21,6 @@ const int tripleLetterPoints[12][2] = { {5,1}, {9,1}, {1,5}, {5,5}, {9,5}, {13,5
 
 void putLetters(vector<char>& letters)
 {
-	// BEGIN 0 points
-	for (int i = 0; i<2; ++i) letters.push_back(' '); // 2 blanks
-	// END 0 points
-
 	// BEGIN 1 points
 	for (int i = 0; i<12; ++i) letters.push_back('e'); // 12 e's
 	for (int i = 0; i<9; ++i)
@@ -252,30 +248,30 @@ void redrawLetters(short term_maxx, short term_maxy, char p1Letters[7], int colo
 	term_resetColorPair();
 }
 
+void fillPlayerLetters(vector<char> letters, char playerLetters[7])
+{
+	static mt19937 mt(time(nullptr));
+	for (int i = 0, id; i<7; ++i)
+	{
+		if (!playerLetters[i])
+		{
+			id = (((double)mt())/(UINT32_MAX))*(letters.size());
+			playerLetters[i] = letters[id];
+			letters.erase(letters.begin()+id);
+		}
+	}
+}
+
 void game()
 {
-	uint8_t input, x = 7, y = 7, lettersRemaining = 100;
+	uint8_t input, x = 7, y = 7, direction = 0;
+	// directorion 0 - undecided, 1-x, 2-y
 
 	int p1Score = 0; // TODO: define pointsToWin (from menu/argument) ; unnecessary if multiplayer will be implemented
 
 	vector<uint8_t> positionsx{}, positionsy{};
 
 	char playfield[15][15];
-	
-	vector<char> letters{};
-	putLetters(letters);
-
-	// randomise letters for players
-	
-	mt19937 mt(time(nullptr));
-	char p1Letters[7];
-	// TODO: 2 players
-	for (unsigned int i = 0, id; i<7; ++i)
-	{
-		id = (((double)mt())/(UINT32_MAX))*(lettersRemaining--);
-		p1Letters[i] = letters[id];
-		letters.erase(letters.begin()+id);
-	}
 
 	// clear field
 
@@ -286,6 +282,14 @@ void game()
 			playfield[x][y] = 0;
 		}
 	}
+
+	vector<char> letters{};
+	putLetters(letters);
+
+	char p1Letters[7] = {0,0,0,0,0,0,0};
+	// TODO: 2 players
+
+	fillPlayerLetters(letters, p1Letters);
 
 	vector<string> wordList;
 	if (parse("words", wordList))
@@ -307,7 +311,6 @@ void game()
 	colorPairIds[5] = term_createColorPair(CYAN, BLACK);
 	colorPairIds[8] = term_createColorPair(BLUE, BLACK);
 	colorPairIds[10] = term_createColorPair(LIGHTGREEN, BLACK);
-
 
 	term_moveCursor(term_maxx/2+12, term_maxy/2-4);
 	term_enableColorPair(colorPairIds[1]);
@@ -345,31 +348,74 @@ void game()
 		{
 			case KEY_ARROW_UP:
 			{
-				if (y>0) --y;
+				if (y>0 && direction!=1)
+				{
+					for (int i = 0; i<positionsx.size(); ++i)
+					{
+						if (positionsx[i]==x&&(positionsy[i]==y||positionsy[i]==y-1))
+						{
+							--y;
+							break;
+						}
+					}
+				}
 				break;
 			}
 			case KEY_ARROW_DOWN:
 			{
-				if (y<14) ++y;
+				if (y<14 && direction!=1)
+				{
+					for (int i = 0; i<positionsx.size(); ++i)
+					{
+						if (positionsx[i]==x&&(positionsy[i]==y||positionsy[i]==y+1))
+						{
+							++y;
+							break;
+						}
+					}
+				}
 				break;
 			}
 			case KEY_ARROW_LEFT:
 			{
-				if (x>0) --x;
+				if (x>0 && direction!=2/* && (playfield[x-1][y] || positionsx.size()==0)*/)
+				{
+					for (int i = 0; i<positionsx.size(); ++i)
+					{
+						if ((positionsx[i]==x||positionsy[i]==x-1)&&positionsy[i]==y)
+						{
+							--x;
+							break;
+						}
+					}
+				}
 				break;
 			}
 			case KEY_ARROW_RIGHT:
 			{
-				if (x<14) ++x;
+				if (x>0 && direction!=2)
+				{
+					for (int i = 0; i<positionsx.size(); ++i)
+					{
+						if ((positionsx[i]==x||positionsx[i]==x+1)&&positionsy[i]==y)
+						{
+							++x;
+							break;
+						}
+					}
+				}
 				break;
 			}
 			case 'A'...'Z': input = tolower(input);
 			case 'a'...'z':
-			case ' ':
 			{
 				int8_t letterId;
 				if ((letterId = findLetter(input, p1Letters))!=-1)
 				{
+					if (positionsx.size()==1)
+					{
+						direction = 1+1*(positionsx[0]==x);
+					}
 					COLORPAIR(p1Letters[letterId]);
 					cout << p1Letters[letterId];
 					term_resetColorPair();
@@ -381,7 +427,7 @@ void game()
 				}
 				break;
 			}
-			case 127: // TODO: add macro; backspace
+			case KEY_BACKSPACE: // TODO: add macro; backspace
 			{
 				for (int i = 0; i<positionsx.size(); ++i)
 				{
@@ -389,13 +435,14 @@ void game()
 					{
 						positionsx.erase(positionsx.begin()+i);
 						positionsy.erase(positionsy.begin()+i);
-						for (int8_t b = 0; b<7; ++x)
+						for (int8_t b = 0; b<7; ++b)
 						{
 							if (!letters[b])
 							{
 								letters[b] = playfield[x][y];
 								redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
 								playfield[x][y] = 0;
+								cout << ' ';
 								break;
 							}
 						}
@@ -412,6 +459,9 @@ void game()
 					positionsx.pop_back();
 					positionsy.pop_back();
 				}
+				fillPlayerLetters(letters, p1Letters);
+				redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
+				direction = 0;
 				break;
 			}
 			default: break;
@@ -424,14 +474,11 @@ int main() // menu
 {
 	term_init();
 
-
 	short term_maxx, term_maxy;
 
 	term_getTermSize(term_maxx, term_maxy);
 
 	if (term_maxx<50||term_maxy<25) return -1;
-
-	// menu things
 
 	cout << "     ███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗" << endl;
 	Sleep(100);
@@ -456,7 +503,7 @@ int main() // menu
 	Sleep(100);
 	cout << "==============================================================" << endl;
 
-	game();
+	if (term_getch()=='1') game();
 
 	term_deinit();
 	return 0;
