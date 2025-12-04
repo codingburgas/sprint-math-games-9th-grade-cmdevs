@@ -95,22 +95,24 @@ int findLetter(char letter, char letters[7])
 	return -1;
 }
 
-inline int containsWord(string word, char str[15], int letterindex)
+int containsWord(string word, char str[15], int letterindex)
 {
-	bool found = 0;
+	bool found;
 	int offset;
-	for (int i = 0; i+word.length()<strlen(str); ++i)
+	for (int i = 0; str[i]; ++i)
 	{
+		found = 0;
 		if (word[0]==str[i])
 		{
 			offset = i;
 			found = 1;
 			++i;
-			for (; i<word.length(); ++i)
+			for (; i-offset<word.length(); ++i)
 			{
 				if (str[i]!=word[i-offset])
 				{
 					found = 0;
+					--i;
 					break;
 				}	
 			}
@@ -120,23 +122,24 @@ inline int containsWord(string word, char str[15], int letterindex)
 			}
 		}
 	}
-	return 0;
+	return -1;
 }
 
-int checkword(int placedx, int placedy, const char board[15][15], vector<string> wordList)
+int checkWordRow(int placedx, int placedy, const char board[15][15], vector<string> wordList)
 {
 	int addedPoints = 0;
 
 	// find word(s) on the current row/column
 	
-	char wordColumn[15], wordRow[15];
+	char wordRow[15];
 	bool valid = 0;
 
-	int offsetx = 0, offsety = 0;
+	int offsetx = 0;
 
 	// row
 	for (int i = 0; i<15; ++i)
 	{
+		valid = 0;
 		if (board[i][placedy]&&!offsetx) offsetx = i;
 		if (offsetx)
 		{
@@ -152,30 +155,12 @@ int checkword(int placedx, int placedy, const char board[15][15], vector<string>
 		}
 	}
 
-	// column
-	for (int i = 0; i<15; ++i)
-	{
-		if (board[placedx][i]&&!offsety) offsety = i;
-		if (offsety)
-		{
-			while(i<15&&board[placedx][i])
-			{
-				if (i==placedy) valid = 1;
-				wordColumn[i-offsety] = board[placedx][i];
-				++i;
-			}
-			wordColumn[i-offsety] = 0;
-			if (valid) break;
-			offsety = 0;
-		}
-	}
-
 	int offset;
 
 	// Check for words on current row
 	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordRow); ++i)
 	{
-		if ((offset = containsWord(wordList[i], wordRow, placedx-offsetx))>0)
+		if ((offset = containsWord(wordList[i], wordRow, placedx-offsetx))!=-1)
 		{
 			if (placedx<offset || placedx>offset+wordList[i].length()) continue; // if found word doesn't connect to the letter at placedx,placedy
 			// base points
@@ -202,12 +187,39 @@ int checkword(int placedx, int placedy, const char board[15][15], vector<string>
 			}
 		}
 	}
+	return addedPoints;
+}
 
-	// Check for words on current column
+int checkWordColumn(int placedx, int placedy, const char board[15][15], vector<string> wordList)
+{
+	int offsety = 0, addedPoints = 0;
+	char wordColumn[15];
+	bool valid = 0;
+	for (int i = 0; i<15; ++i)
+	{
+		valid = 0;
+		if (board[placedx][i])
+		{
+			offsety = i;
+			while(i<15&&board[placedx][i])
+			{
+				if (i==placedy) valid = 1;
+				wordColumn[i-offsety] = board[placedx][i];
+				++i;
+			}
+			wordColumn[i-offsety] = 0;
+			if (valid) break;
+			offsety = 0;
+		}
+	}
+
+	int offset;
+
 	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordColumn); ++i)
 	{
-		if ((offset = containsWord(wordList[i], wordColumn, placedy-offsety))>0)
+		if ((offset = containsWord(wordList[i], wordColumn, placedy-offsety))!=-1)
 		{
+			exit(1);
 			if (placedy<offset || placedy>offset+wordList[i].length()) continue; // if found word doesn't connect to the letter at placedx,placedy
 			// base points
 			for (int b = 0; b<wordList[i].length(); ++i)
@@ -237,7 +249,7 @@ int checkword(int placedx, int placedy, const char board[15][15], vector<string>
 	return addedPoints;
 }
 
-void redrawLetters(short term_maxx, short term_maxy, char p1Letters[7], int colorPairIds[11])
+void redrawLetters(short term_maxx, short term_maxy, char p1Letters[7], uint8_t tileColorPairIds[11])
 {
 	for (int i = 0; i<7; ++i)
 	{
@@ -303,41 +315,41 @@ void game()
 
 	term_getTermSize(term_maxx, term_maxy);
 
-	int colorPairIds[11];
-	colorPairIds[0] = term_createColorPair(WHITE, BLACK);
-	colorPairIds[1] = term_createColorPair(RED, BLACK);
-	colorPairIds[2] = term_createColorPair(YELLOW, BLACK);
-	colorPairIds[3] = term_createColorPair(GREEN, BLACK);
-	colorPairIds[4] = term_createColorPair(PINK, BLACK);
-	colorPairIds[5] = term_createColorPair(CYAN, BLACK);
-	colorPairIds[8] = term_createColorPair(BLUE, BLACK);
-	colorPairIds[10] = term_createColorPair(LIGHTGREEN, BLACK);
+	uint8_t tileColorPairIds[11];
+	tileColorPairIds[0] = term_createColorPair(WHITE, BLACK);
+	tileColorPairIds[1] = term_createColorPair(RED, BLACK);
+	tileColorPairIds[2] = term_createColorPair(YELLOW, BLACK);
+	tileColorPairIds[3] = term_createColorPair(GREEN, BLACK);
+	tileColorPairIds[4] = term_createColorPair(PINK, BLACK);
+	tileColorPairIds[5] = term_createColorPair(CYAN, BLACK);
+	tileColorPairIds[8] = term_createColorPair(BLUE, BLACK);
+	tileColorPairIds[10] = term_createColorPair(LIGHTGREEN, BLACK);
 
 	term_moveCursor(term_maxx/2+12, term_maxy/2-4);
-	term_enableColorPair(colorPairIds[1]);
+	term_enableColorPair(tileColorPairIds[1]);
 	cout << "1 point";
 	term_moveCursor(term_maxx/2+12, term_maxy/2-3);
-	term_enableColorPair(colorPairIds[2]);
+	term_enableColorPair(tileColorPairIds[2]);
 	cout << "2 points";
 	term_moveCursor(term_maxx/2+12, term_maxy/2-2);
-	term_enableColorPair(colorPairIds[3]);
+	term_enableColorPair(tileColorPairIds[3]);
 	cout << "3 points";
 	term_moveCursor(term_maxx/2+12, term_maxy/2-1);
-	term_enableColorPair(colorPairIds[4]);
+	term_enableColorPair(tileColorPairIds[4]);
 	cout << "4 points";
 	term_moveCursor(term_maxx/2+12, term_maxy/2);
-	term_enableColorPair(colorPairIds[5]);
+	term_enableColorPair(tileColorPairIds[5]);
 	cout << "5 points";
 	term_moveCursor(term_maxx/2+12, term_maxy/2+1);
-	term_enableColorPair(colorPairIds[8]);
+	term_enableColorPair(tileColorPairIds[8]);
 	cout << "8 points";
 	term_moveCursor(term_maxx/2+12, term_maxy/2+2);
-	term_enableColorPair(colorPairIds[10]);
+	term_enableColorPair(tileColorPairIds[10]);
 	cout << "10 points";
 
 	// print letters for p1
 
-	redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
+	redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
 
 	// move cursor to the center of the playfield
 
@@ -383,7 +395,7 @@ void game()
 				{
 					for (int i = 0; i<positionsx.size(); ++i)
 					{
-						if ((positionsx[i]==x||positionsy[i]==x-1)&&positionsy[i]==y)
+						if ((positionsx[i]==x||positionsx[i]==x-1)&&positionsy[i]==y)
 						{
 							--x;
 							break;
@@ -416,7 +428,7 @@ void game()
 				{
 					if (positionsx.size()==1)
 					{
-						direction = 1+1*(positionsx[0]==x);
+						direction = 1+(positionsx[0]==x);
 					}
 					COLORPAIR(p1Letters[letterId]);
 					cout << p1Letters[letterId];
@@ -425,11 +437,11 @@ void game()
 					playfield[x][y] = input;
 					positionsx.push_back(x);
 					positionsy.push_back(y);
-					redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
+					redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
 				}
 				break;
 			}
-			case KEY_BACKSPACE: // TODO: add macro; backspace
+			case KEY_BACKSPACE:
 			{
 				for (int i = 0; i<positionsx.size(); ++i)
 				{
@@ -437,14 +449,14 @@ void game()
 					{
 						positionsx.erase(positionsx.begin()+i);
 						positionsy.erase(positionsy.begin()+i);
+						cout << ' ';
 						for (int8_t b = 0; b<7; ++b)
 						{
-							if (!letters[b])
+							if (p1Letters[b]==0)
 							{
-								letters[b] = playfield[x][y];
-								redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
+								p1Letters[b] = playfield[x][y];
+								redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
 								playfield[x][y] = 0;
-								cout << ' ';
 								break;
 							}
 						}
@@ -455,14 +467,31 @@ void game()
 			}
 			case 10: case 13: //enter
 			{
-				while (positionsx.size())
+				int addScore = 0, index = positionsx.size()-1;
+				if (direction==1)
 				{
-					p1Score += checkword(positionsx[positionsx.size()-1], positionsy[positionsy.size()-1], playfield, wordList);
-					positionsx.pop_back();
-					positionsy.pop_back();
+					addScore += checkWordRow(positionsx[positionsx.size()-1], positionsy[positionsy.size()-1], playfield, wordList);
+					while (index)
+					{
+						addScore += checkWordColumn(positionsx[positionsx.size()-1], positionsy[positionsy.size()-1], playfield, wordList);
+						--index;
+					}	
 				}
+				else
+				{
+					addScore += checkWordColumn(positionsx[positionsx.size()-1], positionsy[positionsy.size()-1], playfield, wordList);
+					while (positionsx.size())
+					{
+						addScore += checkWordRow(positionsx[positionsx.size()-1], positionsy[positionsy.size()-1], playfield, wordList);
+						--index;
+					}
+				}
+				if (!addScore) break;
+				p1Score += addScore;
+				positionsx.clear();
+				positionsy.clear();
 				fillPlayerLetters(letters, p1Letters);
-				redrawLetters(term_maxx, term_maxy, p1Letters, colorPairIds);
+				redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
 				direction = 0;
 				break;
 			}
@@ -482,7 +511,7 @@ int main() // menu
 
 	if (term_maxx<50||term_maxy<25) return -1;
 
-	cout << "     ███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗" << endl;
+/*	cout << "     ███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗" << endl;
 	Sleep(100);
 	cout << "     ████╗ ████║ ██╔════╝ ████╗  ██║ ██║   ██║" << endl;
 	Sleep(100);
@@ -497,14 +526,14 @@ int main() // menu
 	Sleep(100);
 	cout << "==============================================================" << endl;
 	Sleep(1000);
-	cout << "                       1) Start️ " << endl;
+	cout << "                       1) Start️" << endl;
 	Sleep(1000);
 	cout << "                       2) Quit " << endl;
 	Sleep(1000);
 	cout << "                       3) Creators "<< endl;
 	Sleep(100);
 	cout << "==============================================================" << endl;
-
+*/
 	if (term_getch()=='1') game();
 
 	term_deinit();

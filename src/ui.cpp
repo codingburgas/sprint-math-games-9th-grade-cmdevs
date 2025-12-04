@@ -39,11 +39,11 @@ void term_deinit()
 
 uint8_t term_getch()
 {
-	uint8_t input = getch();
+	uint8_t input = _getch();
 
 	if (input == 224) // handling arrows
 	{
-		input = getch();
+		input = _getch();
 		switch (input)
 		{
 			case 72:

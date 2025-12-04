@@ -6,6 +6,6 @@
 
 using namespace std;
 
-int parse(string filename, vector<string>& wordList);
+bool parse(string filename, vector<string>& wordList);
 
 #endif

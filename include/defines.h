@@ -12,7 +12,7 @@
 #define getLetterId() (int)((double)mt()/(~0)*100)
 #define getLetterPoints(letter) letter>32?letterPoints[letter-97]:0
 
-#define COLORPAIR(x) term_enableColorPair(colorPairIds[getLetterPoints(x)]);
+#define COLORPAIR(x) term_enableColorPair(tileColorPairIds[getLetterPoints(x)]);
 
 #define BLACK 0
 #define BLUE 1
