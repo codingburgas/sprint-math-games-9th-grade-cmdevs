@@ -95,7 +95,7 @@ int findLetter(char letter, char letters[7])
 	return -1;
 }
 
-int containsWord(string word, char str[15], int letterindex)
+int containsWord(string word, char str[15])
 {
 	bool found;
 	int offset;
@@ -107,7 +107,7 @@ int containsWord(string word, char str[15], int letterindex)
 			offset = i;
 			found = 1;
 			++i;
-			for (; i-offset<word.length(); ++i)
+			for (; i-offset<word.length()-1; ++i)
 			{
 				if (str[i]!=word[i-offset])
 				{
@@ -160,30 +160,46 @@ int checkWordRow(int placedx, int placedy, const char board[15][15], vector<stri
 	// Check for words on current row
 	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordRow); ++i)
 	{
-		if ((offset = containsWord(wordList[i], wordRow, placedx-offsetx))!=-1)
+		if ((offset = containsWord(wordList[i], wordRow))!=-1)
 		{
-			if (placedx<offset || placedx>offset+wordList[i].length()) continue; // if found word doesn't connect to the letter at placedx,placedy
+			if (placedx<offset+offsetx || placedx>offset+wordList[i].length()+offsetx) continue; // if found word doesn't connect to the letter at placedx,placedy
 			// base points
-			for (int b = 0; b<wordList[i].length(); ++i)
+			for (int b = 0; b<wordList[i].length(); ++b)
 				addedPoints += getLetterPoints(wordList[i][b]);
 
-			for (int b = 0; b<wordList[i].length(); ++i)
+			for (int b = 0; b<wordList[i].length(); ++b)
 			{
 				for (int x = 0; x<24; ++x)
-					if (doubleLetterPoints[x][0] == offsetx+b && doubleLetterPoints[x][1] == placedy)
+				{
+					if (doubleLetterPoints[x][0] == offsetx+offset+b && doubleLetterPoints[x][1] == placedy)
+					{
 						addedPoints += getLetterPoints(wordList[i][b]);
+					}
+				}
 
 				for (int x = 0; x<12; ++x)
-					if (tripleLetterPoints[x][0] == offsetx+b && tripleLetterPoints[x][1] == placedy)
-						addedPoints += getLetterPoints(wordList[i][b])*2;
+				{
+					if (tripleLetterPoints[x][0] == offsetx+offset+b && tripleLetterPoints[x][1] == placedy)
+					{
+						addedPoints += (getLetterPoints(wordList[i][b]))*2;
+					}
+				}
 
 				for (int x = 0; x<17; ++x)
-					if (doubleWordPoints[x][0] == offsetx+b && doubleWordPoints[x][1] == placedy)
+				{
+					if (doubleWordPoints[x][0] == offsetx+offset+b && doubleWordPoints[x][1] == placedy)
+					{
 						addedPoints *= 2;
+					}
+				}
 
 				for (int x = 0; x<8; ++x)
-					if (tripleWordPoints[x][0] == offsetx+b && tripleWordPoints[x][1] == placedy)
+				{
+					if (tripleWordPoints[x][0] == offsetx+offset+b && tripleWordPoints[x][1] == placedy)
+					{
 						addedPoints *= 3;
+					}
+				}
 			}
 		}
 	}
@@ -217,31 +233,46 @@ int checkWordColumn(int placedx, int placedy, const char board[15][15], vector<s
 
 	for (int i = 0; i<wordList.size() && wordList[i].length()<strlen(wordColumn); ++i)
 	{
-		if ((offset = containsWord(wordList[i], wordColumn, placedy-offsety))!=-1)
+		if ((offset = containsWord(wordList[i], wordColumn))!=-1)
 		{
-			exit(1);
-			if (placedy<offset || placedy>offset+wordList[i].length()) continue; // if found word doesn't connect to the letter at placedx,placedy
+			if (placedy<offset+offsety || placedy>offset+wordList[i].length()+offsety) continue; // if found word doesn't connect to the letter at placedx,placedy
 			// base points
-			for (int b = 0; b<wordList[i].length(); ++i)
+			for (int b = 0; b<wordList[i].length(); ++b)
 				addedPoints += getLetterPoints(wordList[i][b]);
 
-			for (int b = 0; b<wordList[i].length(); ++i)
+			for (int b = 0; b<wordList[i].length(); ++b)
 			{
 				for (int x = 0; x<24; ++x)
-					if (doubleLetterPoints[x][1] == offsety+b && doubleLetterPoints[x][0] == placedx)
+				{
+					if (doubleLetterPoints[x][1] == offsety+offset+b && doubleLetterPoints[x][0] == placedx)
+					{
 						addedPoints += getLetterPoints(wordList[i][b]);
+					}
+				}
 
 				for (int x = 0; x<12; ++x)
-					if (tripleLetterPoints[x][1] == offsety+b && tripleLetterPoints[x][0] == placedx)
+				{
+					if (tripleLetterPoints[x][1] == offsety+offset+b && tripleLetterPoints[x][0] == placedx)
+					{
 						addedPoints += getLetterPoints(wordList[i][b])*2;
+					}
+				}
 
 				for (int x = 0; x<17; ++x)
-					if (doubleWordPoints[x][1] == offsety+b && doubleWordPoints[x][0] == placedx)
+				{
+					if (doubleWordPoints[x][1] == offsety+offset+b && doubleWordPoints[x][0] == placedx)
+					{
 						addedPoints *= 2;
+					}
+				}
 
 				for (int x = 0; x<8; ++x)
-					if (tripleWordPoints[x][1] == offsety+b && tripleWordPoints[x][0] == placedx)
+				{
+					if (tripleWordPoints[x][1] == offsety+offset+b && tripleWordPoints[x][0] == placedx)
+					{
 						addedPoints *= 3;
+					}
+				}
 			}
 		}
 	}
@@ -280,7 +311,7 @@ void game()
 	uint8_t input, x = 7, y = 7, direction = 0;
 	// directorion 0 - undecided, 1-x, 2-y
 
-	int p1Score = 0; // TODO: define pointsToWin (from menu/argument) ; unnecessary if multiplayer will be implemented
+	int p1Score = 0;
 
 	vector<uint8_t> positionsx{}, positionsy{};
 
@@ -325,6 +356,9 @@ void game()
 	tileColorPairIds[8] = term_createColorPair(BLUE, BLACK);
 	tileColorPairIds[10] = term_createColorPair(LIGHTGREEN, BLACK);
 
+	term_moveCursor(0,0);
+	cout << 0; // temp points
+
 	term_moveCursor(term_maxx/2+12, term_maxy/2-4);
 	term_enableColorPair(tileColorPairIds[1]);
 	cout << "1 point";
@@ -363,6 +397,11 @@ void game()
 			{
 				if (y>0 && direction!=1)
 				{
+					if (!positionsx.size()&&(playfield[x][y]||playfield[x][y-1]))
+					{
+						--y;
+						break;
+					}
 					for (int i = 0; i<positionsx.size(); ++i)
 					{
 						if (positionsx[i]==x&&(positionsy[i]==y||positionsy[i]==y-1))
@@ -378,6 +417,11 @@ void game()
 			{
 				if (y<14 && direction!=1)
 				{
+					if (!positionsx.size()&&(playfield[x][y]||playfield[x][y+1]))
+					{
+						++y;
+						break;
+					}
 					for (int i = 0; i<positionsx.size(); ++i)
 					{
 						if (positionsx[i]==x&&(positionsy[i]==y||positionsy[i]==y+1))
@@ -391,8 +435,13 @@ void game()
 			}
 			case KEY_ARROW_LEFT:
 			{
-				if (x>0 && direction!=2/* && (playfield[x-1][y] || positionsx.size()==0)*/)
+				if (x>0 && direction!=2)
 				{
+					if (!positionsx.size()&&(playfield[x][y]||playfield[x-1][y]))
+					{
+						--x;
+						break;
+					}
 					for (int i = 0; i<positionsx.size(); ++i)
 					{
 						if ((positionsx[i]==x||positionsx[i]==x-1)&&positionsy[i]==y)
@@ -408,6 +457,11 @@ void game()
 			{
 				if (x>0 && direction!=2)
 				{
+					if (!positionsx.size()&&(playfield[x][y]||playfield[x+1][y]))
+					{
+						++x;
+						break;
+					}
 					for (int i = 0; i<positionsx.size(); ++i)
 					{
 						if ((positionsx[i]==x||positionsx[i]==x+1)&&positionsy[i]==y)
@@ -488,6 +542,8 @@ void game()
 				}
 				if (!addScore) break;
 				p1Score += addScore;
+				term_moveCursor(0,0);
+				cout << p1Score;
 				positionsx.clear();
 				positionsy.clear();
 				fillPlayerLetters(letters, p1Letters);
