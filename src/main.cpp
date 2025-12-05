@@ -316,13 +316,13 @@ void redrawSpecialTiles(short term_maxx, short term_maxy, uint8_t specialColorPa
 	term_resetColorPair();
 }
 
-void redrawLetters(short term_maxx, short term_maxy, char p1Letters[7], uint8_t tileColorPairIds[11])
+void redrawLetters(short term_maxx, short term_maxy, char playerLetters[7], uint8_t tileColorPairIds[11])
 {
 	for (int i = 0; i<7; ++i)
 	{
 		term_moveCursor(term_maxx/2-7+i*2, term_maxy/2+10);
-		COLORPAIR(p1Letters[i]);
-		cout << (p1Letters[i]?p1Letters[i]:' ');
+		COLORPAIR(playerLetters[i]);
+		cout << (playerLetters[i]?playerLetters[i]:' ');
 	}
 	term_resetColorPair();
 }
@@ -347,7 +347,7 @@ void game()
 	uint8_t input, x = 7, y = 7, direction = 0;
 	// direction 0 - undecided, 1-x, 2-y
 
-	int p1Score = 0;
+	int playerScore[2] = {0,0};
 
 	vector<uint8_t> positionsx{}, positionsy{};
 
@@ -366,10 +366,11 @@ void game()
 	vector<char> letters{};
 	putLetters(letters);
 
-	char p1Letters[7] = {0,0,0,0,0,0,0};
-	// TODO: 2 players
+	char playerLetters[2][7] = { {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0} };
+	uint8_t turn = 0;
 
-	fillPlayerLetters(letters, p1Letters);
+	fillPlayerLetters(letters, playerLetters[0]);
+	fillPlayerLetters(letters, playerLetters[1]);
 
 	vector<string> wordList;
 	if (parse("words", wordList))
@@ -399,7 +400,7 @@ void game()
 	specialTileColorPairIds[TRIPLELETTERPOINTSPAIR] = term_createColorPair(PINK, PINK);
 
 	term_moveCursor(0,0);
-	cout << 0; // temp points
+	cout << "Player 1: 0 points\nPlayer 2: 0 points"; // temp
 
 	term_moveCursor(term_maxx/2+12, term_maxy/2-5);
 	term_enableColorPair(tileColorPairIds[1]);
@@ -446,11 +447,16 @@ void game()
 
 	// print letters for p1
 
-	redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
+	redrawLetters(term_maxx, term_maxy, playerLetters[0], tileColorPairIds);
 
 	// print special tiles
 
 	redrawSpecialTiles(term_maxx, term_maxy, specialTileColorPairIds);
+
+	// print turn
+
+	term_moveCursor(COORDSX(1), COORDSY(-3));
+	cout << "Player " << turn+1 << "'s turn";
 
 	// move cursor to the center of the playfield
 
@@ -533,20 +539,20 @@ void game()
 			{
 				if (playfield[x][y]) break;
 				int8_t letterId;
-				if ((letterId = findLetter(input, p1Letters))!=-1)
+				if ((letterId = findLetter(input, playerLetters[turn]))!=-1)
 				{
 					if (positionsx.size()==1)
 					{
 						direction = 1+(positionsx[0]==x);
 					}
-					COLORPAIR(p1Letters[letterId]);
-					cout << p1Letters[letterId];
+					COLORPAIR(playerLetters[turn][letterId]);
+					cout << playerLetters[turn][letterId];
 					term_resetColorPair();
-					p1Letters[letterId] = 0;
+					playerLetters[turn][letterId] = 0;
 					playfield[x][y] = input;
 					positionsx.push_back(x);
 					positionsy.push_back(y);
-					redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
+					redrawLetters(term_maxx, term_maxy, playerLetters[turn], tileColorPairIds);
 				}
 				break;
 			}
@@ -556,19 +562,65 @@ void game()
 				{
 					if (positionsx[i]==x&&positionsy[i]==y)
 					{
+						// print special tile color if present
+						for (int b = 0; b<24; ++b)
+						{
+							if (doubleLetterPoints[b][0]==x&&doubleLetterPoints[b][1]==y)
+							{
+								term_enableColorPair(specialTileColorPairIds[DOUBLELETTERPOINTSPAIR]);
+								break;
+							}
+						}
+
+						for (int b = 0; b<12; ++b)
+						{
+							if (tripleLetterPoints[b][0]==x&&tripleLetterPoints[b][1]==y)
+							{
+								term_enableColorPair(specialTileColorPairIds[TRIPLELETTERPOINTSPAIR]);
+								break;
+							}
+						}
+
+						for (int b = 0; b<17; ++b)
+						{
+							if (doubleWordPoints[b][0]==x&&doubleWordPoints[b][1]==y)
+							{
+								term_enableColorPair(specialTileColorPairIds[DOUBLEWORDPOINTSPAIR]);
+								break;
+							}
+						}
+
+						for (int b = 0; b<8; ++b)
+						{
+							if (tripleWordPoints[b][0]==x&&tripleWordPoints[b][1]==y)
+							{
+								term_enableColorPair(specialTileColorPairIds[TRIPLEWORDPOINTSPAIR]);
+								break;
+							}
+						}
+
 						positionsx.erase(positionsx.begin()+i);
 						positionsy.erase(positionsy.begin()+i);
 						cout << ' ';
 						for (int8_t b = 0; b<7; ++b)
 						{
-							if (p1Letters[b]==0)
+							if (playerLetters[turn][b]==0)
 							{
-								p1Letters[b] = playfield[x][y];
-								redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
+								playerLetters[turn][b] = playfield[x][y];
+								redrawLetters(term_maxx, term_maxy, playerLetters[turn], tileColorPairIds);
 								playfield[x][y] = 0;
 								break;
 							}
 						}
+
+						if (!positionsx.size()&&!playfield[7][7]) // return player to 7:7 if deleted all tiles while being outside of 7:7 on the first turn
+						{
+							x = 7;
+							y = 7;
+							break;
+						}
+						else if (positionsx.size()==1) direction = 0;
+
 						break;
 					}
 				}
@@ -596,13 +648,20 @@ void game()
 					}
 				}
 				if (!addScore) break;
-				p1Score += addScore;
-				term_moveCursor(0,0);
-				cout << p1Score;
+				playerScore[turn] += addScore;
+				term_moveCursor(0,turn);
+				cout << "Player " << turn+1 << ": " << playerScore[turn] << " point" << (playerScore[turn]%10==1?' ':'s');
 				positionsx.clear();
 				positionsy.clear();
-				fillPlayerLetters(letters, p1Letters);
-				redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
+				fillPlayerLetters(letters, playerLetters[turn]);
+				turn = !turn;
+
+				redrawLetters(term_maxx, term_maxy, playerLetters[turn], tileColorPairIds);
+
+				// print turn
+				term_moveCursor(COORDSX(1), COORDSY(-3));
+				cout << "Player " << turn+1 << "'s turn";
+
 				direction = 0;
 				break;
 			}
