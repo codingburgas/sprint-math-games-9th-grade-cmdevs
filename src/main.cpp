@@ -107,7 +107,7 @@ int containsWord(string word, char str[15])
 			offset = i;
 			found = 1;
 			++i;
-			for (; i-offset<word.length()-1; ++i)
+			for (; i-offset<word.length(); ++i)
 			{
 				if (str[i]!=word[i-offset])
 				{
@@ -156,9 +156,8 @@ int checkWordRow(int placedx, int placedy, const char board[15][15], vector<stri
 	}
 
 	int offset;
-
 	// Check for words on current row
-	for (int i = wordList.size()-2; i>0; --i)
+	for (int i = wordList.size()-1; i>0; --i)
 	{
 		if (wordList[i].length()>strlen(wordRow)) continue;
 		if ((offset = containsWord(wordList[i], wordRow))!=-1)
@@ -284,6 +283,39 @@ int checkWordColumn(int placedx, int placedy, const char board[15][15], vector<s
 	return addedPoints;
 }
 
+void redrawSpecialTiles(short term_maxx, short term_maxy, uint8_t specialColorPairIds[4])
+{
+	term_enableColorPair(specialColorPairIds[DOUBLEWORDPOINTSPAIR]);
+	for (int i = 0; i<17; ++i)
+	{
+		term_moveCursor(COORDSX(doubleWordPoints[i][0]), COORDSY(doubleWordPoints[i][1]));
+		cout << ' ';
+	}
+
+	term_enableColorPair(specialColorPairIds[TRIPLEWORDPOINTSPAIR]);
+	for (int i = 0; i<8; ++i)
+	{
+		term_moveCursor(COORDSX(tripleWordPoints[i][0]), COORDSY(tripleWordPoints[i][1]));
+		cout << ' ';
+	}
+
+	term_enableColorPair(specialColorPairIds[DOUBLELETTERPOINTSPAIR]);
+	for (int i = 0; i<24; ++i)
+	{
+		term_moveCursor(COORDSX(doubleLetterPoints[i][0]), COORDSY(doubleLetterPoints[i][1]));
+		cout << ' ';
+	}
+
+	term_enableColorPair(specialColorPairIds[TRIPLELETTERPOINTSPAIR]);
+	for (int i = 0; i<12; ++i)
+	{
+		term_moveCursor(COORDSX(tripleLetterPoints[i][0]), COORDSY(tripleLetterPoints[i][1]));
+		cout << ' ';
+	}
+
+	term_resetColorPair();
+}
+
 void redrawLetters(short term_maxx, short term_maxy, char p1Letters[7], uint8_t tileColorPairIds[11])
 {
 	for (int i = 0; i<7; ++i)
@@ -360,34 +392,65 @@ void game()
 	tileColorPairIds[8] = term_createColorPair(BLUE, BLACK);
 	tileColorPairIds[10] = term_createColorPair(LIGHTGREEN, BLACK);
 
+	uint8_t specialTileColorPairIds[4];
+	specialTileColorPairIds[DOUBLEWORDPOINTSPAIR] = term_createColorPair(BLUE, BLUE);
+	specialTileColorPairIds[TRIPLEWORDPOINTSPAIR] = term_createColorPair(RED, RED);
+	specialTileColorPairIds[DOUBLELETTERPOINTSPAIR] = term_createColorPair(CYAN, CYAN);
+	specialTileColorPairIds[TRIPLELETTERPOINTSPAIR] = term_createColorPair(PINK, PINK);
+
 	term_moveCursor(0,0);
 	cout << 0; // temp points
 
-	term_moveCursor(term_maxx/2+12, term_maxy/2-4);
+	term_moveCursor(term_maxx/2+12, term_maxy/2-5);
 	term_enableColorPair(tileColorPairIds[1]);
 	cout << "1 point";
-	term_moveCursor(term_maxx/2+12, term_maxy/2-3);
+	term_moveCursor(term_maxx/2+12, term_maxy/2-4);
 	term_enableColorPair(tileColorPairIds[2]);
 	cout << "2 points";
-	term_moveCursor(term_maxx/2+12, term_maxy/2-2);
+	term_moveCursor(term_maxx/2+12, term_maxy/2-3);
 	term_enableColorPair(tileColorPairIds[3]);
 	cout << "3 points";
-	term_moveCursor(term_maxx/2+12, term_maxy/2-1);
+	term_moveCursor(term_maxx/2+12, term_maxy/2-2);
 	term_enableColorPair(tileColorPairIds[4]);
 	cout << "4 points";
-	term_moveCursor(term_maxx/2+12, term_maxy/2);
+	term_moveCursor(term_maxx/2+12, term_maxy/2-1);
 	term_enableColorPair(tileColorPairIds[5]);
 	cout << "5 points";
-	term_moveCursor(term_maxx/2+12, term_maxy/2+1);
+	term_moveCursor(term_maxx/2+12, term_maxy/2);
 	term_enableColorPair(tileColorPairIds[8]);
 	cout << "8 points";
-	term_moveCursor(term_maxx/2+12, term_maxy/2+2);
+	term_moveCursor(term_maxx/2+12, term_maxy/2+1);
 	term_enableColorPair(tileColorPairIds[10]);
 	cout << "10 points";
+	term_moveCursor(term_maxx/2+12, term_maxy/2+2);
+	term_enableColorPair(specialTileColorPairIds[DOUBLEWORDPOINTSPAIR]);
+	cout << ' ';
+	term_resetColorPair();
+	cout << " - 2x word points";
+	term_moveCursor(term_maxx/2+12, term_maxy/2+3);
+	term_enableColorPair(specialTileColorPairIds[TRIPLEWORDPOINTSPAIR]);
+	cout << ' ';
+	term_resetColorPair();
+	cout << " - 3x word points";
+	term_moveCursor(term_maxx/2+12, term_maxy/2+4);
+	term_enableColorPair(specialTileColorPairIds[DOUBLELETTERPOINTSPAIR]);
+	cout << ' ';
+	term_resetColorPair();
+	cout << " - 2x letter points";
+	term_moveCursor(term_maxx/2+12, term_maxy/2+5);
+	term_enableColorPair(specialTileColorPairIds[TRIPLELETTERPOINTSPAIR]);
+	cout << ' ';
+	term_resetColorPair();
+	cout << " - 3x letter points";
+	term_resetColorPair();
 
 	// print letters for p1
 
 	redrawLetters(term_maxx, term_maxy, p1Letters, tileColorPairIds);
+
+	// print special tiles
+
+	redrawSpecialTiles(term_maxx, term_maxy, specialTileColorPairIds);
 
 	// move cursor to the center of the playfield
 
