@@ -332,6 +332,7 @@ void fillPlayerLetters(vector<char> letters, char playerLetters[7])
 	static mt19937 mt(time(nullptr));
 	for (int i = 0, id; i<7; ++i)
 	{
+		if (!letters.size()) return;
 		if (!playerLetters[i])
 		{
 			id = (((double)mt())/(UINT32_MAX))*(letters.size());
@@ -341,7 +342,16 @@ void fillPlayerLetters(vector<char> letters, char playerLetters[7])
 	}
 }
 
-void game()
+int emptyLettersOnHand(char letters[7])
+{
+	int ret = 0;
+	for (int i = 0; i<7; ++i)
+		ret += letters[i]==0;
+
+	return ret;
+}
+
+int game()
 {
 	term_clear();
 	uint8_t input, x = 7, y = 7, direction = 0;
@@ -375,8 +385,9 @@ void game()
 	vector<string> wordList;
 	if (parse("words", wordList))
 	{
+		term_deinit();
 		cout << "Word list not found, exiting...\n";
-		return;
+		exit(1);
 	}
 
 	short term_maxx, term_maxy;
@@ -626,9 +637,24 @@ void game()
 				}
 				break;
 			}
+			case 32: // pass
+			{
+				// if any letters have been placed
+				if (positionsx.size()) break;
+
+				turn = !turn;
+				redrawLetters(term_maxx, term_maxy, playerLetters[turn], tileColorPairIds);
+
+				// print turn
+				term_moveCursor(COORDSX(1), COORDSY(-3));
+				cout << "Player " << turn+1 << "'s turn";
+				break;
+			}
 			case 10: case 13: //enter
 			{
+				if (!positionsx.size()) break;
 				int addScore = 0, index = positionsx.size()-1;
+				if (index==6) addScore += 50;
 				if (direction==1) // x
 				{
 					addScore += checkWordRow(positionsx[positionsx.size()-1], positionsy[positionsy.size()-1], playfield, wordList);
@@ -650,10 +676,17 @@ void game()
 				if (!addScore) break;
 				playerScore[turn] += addScore;
 				term_moveCursor(0,turn);
-				cout << "Player " << turn+1 << ": " << playerScore[turn] << " point" << (playerScore[turn]%10==1?' ':'s');
+				cout << "Player " << turn+1 << ": " << playerScore[turn] << " point" << (playerScore[turn]%100==1?' ':'s');
 				positionsx.clear();
 				positionsy.clear();
 				fillPlayerLetters(letters, playerLetters[turn]);
+
+				if ((letters.size()+emptyLettersOnHand(playerLetters[turn]))==0)
+				{
+					// if all letters are used
+					return playerScore[0]<playerScore[1];
+				}
+
 				turn = !turn;
 
 				redrawLetters(term_maxx, term_maxy, playerLetters[turn], tileColorPairIds);
@@ -669,6 +702,7 @@ void game()
 		}
 		term_moveCursor(COORDSX(x), COORDSY(y));
 	}
+	return playerScore[0]<playerScore[1];
 }
 
 int main() // menu
@@ -704,8 +738,17 @@ int main() // menu
 	Sleep(100);
 	cout << "==============================================================" << endl;
 */
-	if (term_getch()=='1') game();
+	int result;
+	if (term_getch()=='1')
+		result = game();
+	else // temp 
+	{
+		term_deinit();
+		return 0;
+	}
 
 	term_deinit();
+
+	cout << "Player " << result+1 << " won!\n";
 	return 0;
 }
