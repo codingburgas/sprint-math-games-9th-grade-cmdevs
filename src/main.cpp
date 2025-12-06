@@ -650,8 +650,8 @@ int game()
 				cout << "Player " << turn+1 << "'s turn";
 				break;
 			}
-			case 10: case 13: //enter
-			{
+			case 10: case 13: // enter and numpad enter
+			{	// count points
 				if (!positionsx.size()) break;
 				int addScore = 0, index = positionsx.size()-1;
 				if (index==6) addScore += 50;
@@ -673,9 +673,10 @@ int game()
 						--index;
 					}
 				}
+				// no words found
 				if (!addScore) break;
 				playerScore[turn] += addScore;
-				term_moveCursor(0,turn);
+				term_moveCursor(0, turn);
 				cout << "Player " << turn+1 << ": " << playerScore[turn] << " point" << (playerScore[turn]%100==1?' ':'s');
 				positionsx.clear();
 				positionsy.clear();
@@ -698,6 +699,49 @@ int game()
 				direction = 0;
 				break;
 			}
+			case CONTROL('R'): // replace some or all letters
+			{
+				if (positionsx.size()) break;
+				term_moveCursor(COORDSX(-2), COORDSY(-5));
+				cout << "Select letters to replace";
+				term_moveCursor(COORDSX(x), COORDSY(y));
+				while ((input = term_getch()) && input!=10 && input!=13)
+				{
+					switch (input)
+					{
+						case 'A'...'Z': input = tolower(input);
+						case 'a'...'z':
+						{
+							for (int i = 0; i<7; ++i)
+							{
+								if (playerLetters[turn][i]==input)
+								{
+									playerLetters[turn][i] = 0;
+									redrawLetters(term_maxx, term_maxy, playerLetters[turn], tileColorPairIds);
+									term_moveCursor(COORDSX(x), COORDSY(y));
+									break;
+								}
+							}
+							break;
+						}
+					}
+				}
+
+				fillPlayerLetters(letters, playerLetters[turn]);
+
+				term_moveCursor(COORDSX(-2), COORDSY(-5));
+				cout << "                        ";
+
+				turn = !turn;
+
+				redrawLetters(term_maxx, term_maxy, playerLetters[turn], tileColorPairIds);
+
+				// print turn
+				term_moveCursor(COORDSX(1), COORDSY(-3));
+				cout << "Player " << turn+1 << "'s turn";
+
+				break;
+			}
 			default: break;
 		}
 		term_moveCursor(COORDSX(x), COORDSY(y));
@@ -713,31 +757,31 @@ int main() // menu
 
 	term_getTermSize(term_maxx, term_maxy);
 
-	if (term_maxx<50||term_maxy<25) return -1;
+	if (term_maxx<60||term_maxy<25) return -1;
 
-/*	cout << "     ███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗" << endl;
-	Sleep(100);
-	cout << "     ████╗ ████║ ██╔════╝ ████╗  ██║ ██║   ██║" << endl;
-	Sleep(100);
-	cout << "     ██╔████╔██║ █████╗   ██╔██╗ ██║ ██║   ██║" << endl;
-	Sleep(100);
-	cout << "     ██║╚██╔╝██║ ██╔══╝   ██║╚██╗██║ ██║   ██║" << endl;
-	Sleep(100);
-	cout << "     ██║ ╚═╝ ██║ ███████╗ ██║ ╚████║ ╚██████╔╝" << endl;
-	Sleep(100);
-	cout << "     ╚═╝     ╚═╝ ╚══════╝ ╚═╝  ╚═══╝  ╚═════╝" << endl;
+	cout << "███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗";
+	Sleep(200);
+	cout << "████╗ ████║ ██╔════╝ ████╗  ██║ ██║   ██║";
+	Sleep(200);
+	cout << "██╔████╔██║ █████╗   ██╔██╗ ██║ ██║   ██║";
+	Sleep(200);
+	cout << "██║╚██╔╝██║ ██╔══╝   ██║╚██╗██║ ██║   ██║";
+	Sleep(200);
+	cout << "██║ ╚═╝ ██║ ███████╗ ██║ ╚████║ ╚██████╔╝";
+	Sleep(200);
+	cout << "╚═╝     ╚═╝ ╚══════╝ ╚═╝  ╚═══╝  ╚═════╝";
 
-	Sleep(100);
-	cout << "==============================================================" << endl;
-	Sleep(1000);
-	cout << "                       1) Start️" << endl;
-	Sleep(1000);
-	cout << "                       2) Quit " << endl;
-	Sleep(1000);
-	cout << "                       3) Creators "<< endl;
-	Sleep(100);
-	cout << "==============================================================" << endl;
-*/
+	Sleep(200);
+	cout << "==============================================================";
+	Sleep(300);
+	cout << "1) Start";
+	Sleep(300);
+	cout << "2) Quit";
+	Sleep(300);
+	cout << "3) Creators";
+	Sleep(200);
+	cout << "==============================================================";
+
 	int result;
 	if (term_getch()=='1')
 		result = game();
