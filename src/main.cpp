@@ -387,6 +387,7 @@ int game()
 	{
 		term_deinit();
 		cout << "Word list not found, exiting...\n";
+		term_getch();
 		exit(1);
 	}
 
@@ -751,6 +752,7 @@ int game()
 
 int main() // menu
 {
+init:
 	term_init();
 
 	short term_maxx, term_maxy;
@@ -759,40 +761,140 @@ int main() // menu
 
 	if (term_maxx<60||term_maxy<25) return -1;
 
-	cout << "███╗   ███╗ ███████╗ ███╗   ██╗ ██╗   ██╗\n";
+	term_moveCursor(term_maxx/2-20, term_maxy/2-10);
+	cout << " _______   _______   _\n";
 	Sleep(200);
-	cout << "████╗ ████║ ██╔════╝ ████╗  ██║ ██║   ██║\n";
+	term_moveCursor(term_maxx/2-20, term_maxy/2-9);
+	cout << "(       ) (  ____ \\ ( (    /| |\\     /|\n";
 	Sleep(200);
-	cout << "██╔████╔██║ █████╗   ██╔██╗ ██║ ██║   ██║\n";
+	term_moveCursor(term_maxx/2-20, term_maxy/2-8);
+	cout << "| () () | | (    \\/ |  \\  ( | | )   ( |\n";
 	Sleep(200);
-	cout << "██║╚██╔╝██║ ██╔══╝   ██║╚██╗██║ ██║   ██║\n";
+	term_moveCursor(term_maxx/2-20, term_maxy/2-7);
+	cout << "| || || | | (__     |   \\ | | | |   | |\n";
 	Sleep(200);
-	cout << "██║ ╚═╝ ██║ ███████╗ ██║ ╚████║ ╚██████╔╝\n";
+	term_moveCursor(term_maxx/2-20, term_maxy/2-6);
+	cout << "| |(_)| | |  __)    | (\\ \\) | | |   | |\n";
 	Sleep(200);
-	cout << "╚═╝     ╚═╝ ╚══════╝ ╚═╝  ╚═══╝  ╚═════╝\n";
+	term_moveCursor(term_maxx/2-20, term_maxy/2-5);
+	cout << "| |   | | | (       | | \\   | | |   | |\n";
+	Sleep(200);
+	term_moveCursor(term_maxx/2-20, term_maxy/2-4);
+	cout << "| )   ( | | (____/\\ | )  \\  | | (___) |\n";
+	Sleep(200);
+	term_moveCursor(term_maxx/2-20, term_maxy/2-3);
+	cout << "|/     \\| (_______/ |/    )_) (_______)\n";
 
 	Sleep(200);
+	term_moveCursor(term_maxx/2-31, term_maxy/2);
 	cout << "==============================================================\n";
-	Sleep(300);
-	cout << "                           1) Start\n";
-	Sleep(300);
-	cout << "                           2) Quit\n";
-	Sleep(300);
-	cout << "                           3) Creators\n";
 	Sleep(200);
+	term_moveCursor(term_maxx/2-4, term_maxy/2+2);
+	cout << "1) Start";
+	Sleep(200);
+	term_moveCursor(term_maxx/2-4, term_maxy/2+3);
+	cout << "2) Quit";
+	Sleep(200);
+	term_moveCursor(term_maxx/2-4, term_maxy/2+4);
+	cout << "3) Rules";
+	Sleep(200);
+	term_moveCursor(term_maxx/2-4, term_maxy/2+5);
+	cout << "4) Controls";
+	Sleep(200);
+	term_moveCursor(term_maxx/2-4, term_maxy/2+6);
+	cout << "5) Creators";
+	Sleep(200);
+	term_moveCursor(term_maxx/2-31, term_maxy/2+8);
 	cout << "==============================================================\n";
 
 	int result;
-	if (term_getch()=='1')
-		result = game();
-	else // temp 
+	switch(term_getch())
 	{
-		term_deinit();
-		return 0;
+		case '1':
+		{
+			result = game();
+			break;
+		}
+		case '3':
+		{
+			term_clear();
+			term_moveCursor(term_maxx/2-4, term_maxy/2-10);
+			cout << "Scrabble";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-8);
+			cout << "The goal of the game is to get points";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-7);
+			cout << "by using the letters you have. You win";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-6);
+			cout << "when there are no more letters left.";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-5);
+			cout << "You can move only to tiles with letters";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-4);
+			cout << "in or next to them. You can see your";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-3);
+			cout << "hand below the playfield. During your";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-2);
+			cout << "turn, you can do either:";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-1);
+			cout << "1. Place one or more letters to form";
+			term_moveCursor(term_maxx/2-20, term_maxy/2);
+			cout << "one or more words";
+			term_moveCursor(term_maxx/2-20, term_maxy/2+1);
+			cout << "2. Pass the turn and get zero points";
+			term_moveCursor(term_maxx/2-20, term_maxy/2+2);
+			cout << "3. Exchange some letters for new ones";
+			term_moveCursor(term_maxx/2-20, term_maxy/2+3);
+			cout << "Good luck and have fun!";
+			term_getch();
+			goto init;
+		}
+		case '4':
+		{
+			term_clear();
+			term_moveCursor(term_maxx/2-15, term_maxy/2-3);
+			cout << "Arrow keys - move on the field";
+			term_moveCursor(term_maxx/2-15, term_maxy/2-2);
+			cout << "Letter - choose / place a letter";
+			term_moveCursor(term_maxx/2-15, term_maxy/2-1);
+			cout << "Enter - calculate score";
+			term_moveCursor(term_maxx/2-15, term_maxy/2);
+			cout << "Space - pass your turn";
+			term_moveCursor(term_maxx/2-15, term_maxy/2+1);
+			cout << "Ctrl-R - exchange letters";
+			term_moveCursor(term_maxx/2-15, term_maxy/2+2);
+			cout << "Backspace - return a letter";
+			term_moveCursor(term_maxx/2-15, term_maxy/2+3);
+			cout << "Ctrl-C - finish the game";
+			term_getch();
+			goto init;
+		}
+		case '5':
+		{
+			term_clear();
+			term_moveCursor(term_maxx/2-16, term_maxy/2-2);
+			cout << "Scrum Leader		- 		SAKostin";
+			Sleep(200);
+			term_moveCursor(term_maxx/2-16, term_maxy/2-1);
+			cout << "Backend Developer	- 		SVRomanchenko";
+			Sleep(200);
+
+			term_moveCursor(term_maxx/2-16, term_maxy/2+1);
+			cout << "Frontend Developer	- 		OVBondarenko";
+			Sleep(200);
+			term_moveCursor(term_maxx/2-16, term_maxy/2+2);
+			cout << "Designer			-		SAChapkina";
+			term_getch();
+			goto init;
+		}
+		default:
+		{
+			term_deinit();
+			return 0;
+		}
 	}
 
 	term_deinit();
 
 	cout << "Player " << result+1 << " won!\n";
+	term_getch();
 	return 0;
 }

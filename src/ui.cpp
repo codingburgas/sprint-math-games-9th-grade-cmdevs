@@ -33,7 +33,6 @@ void term_init()
 void term_deinit()
 {
 	term_resetColorPair();
-	term_clear();
 	term_moveCursor(0,0);
 }
 
