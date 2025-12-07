@@ -14,6 +14,7 @@ void term_moveCursor(short x, short y); // Move cursor to x and y position speci
 uint8_t term_createColorPair(color_t foreground, color_t background); // Create color pair with foreground (text) and background colors specified
 void term_enableColorPair(uint8_t colorPairIndex); // Activate color pair with id specified
 void term_resetColorPair(); // Set color pair to white text on black background
+void term_setCursorVisibility(bool visible); // Change cursor visibility (0 or 1)
 void term_getTermSize(short& x, short& y); // Get terminal size
 
 #endif

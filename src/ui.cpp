@@ -21,6 +21,13 @@ void term_init()
 
 	term_clear();
 
+	// set cursor to box
+
+	CONSOLE_CURSOR_INFO cursorInfo;
+	GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+	cursorInfo.dwSize = 100;
+	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+
 	// Initialise all color pairs to white text on black background (default)
 
 	for (uint8_t i = 0; i<16; ++i)
@@ -33,6 +40,7 @@ void term_init()
 void term_deinit()
 {
 	term_resetColorPair();
+	term_clear();
 	term_moveCursor(0,0);
 }
 
@@ -111,17 +119,34 @@ void term_getTermSize(short& x, short& y)
 {
 	CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufferInfo);
-	x = bufferInfo.srWindow.Right - bufferInfo.srWindow.Left;
-	y = bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top;
+	x = bufferInfo.srWindow.Right - bufferInfo.srWindow.Left+1;
+	y = bufferInfo.srWindow.Bottom - bufferInfo.srWindow.Top+1;
+}
+
+void term_setCursorVisibility(bool visible)
+{
+	CONSOLE_CURSOR_INFO cursorInfo;
+	GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+	cursorInfo.bVisible = visible;
+	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 }
 
 void term_clear()
 {
-	short x, y;
-	DWORD counter;
-	term_getTermSize(x, y);
-	--x; // no stack overflow
-	--y;
-	FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', ((int)x)*y, {0,0}, &counter);
+	short term_maxx, term_maxy;
+	term_getTermSize(term_maxx, term_maxy);
+	term_resetColorPair();
+	term_moveCursor(0,0);
+
+	string fullLine = "";
+
+	for (int x = 0; x<term_maxx; ++x)
+		fullLine += ' ';
+
+	for (int y = 0; y<term_maxy; ++y)
+	{
+		term_moveCursor(0, y);
+		cout << fullLine;
+	}
 	term_moveCursor(0,0);
 }

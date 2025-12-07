@@ -327,7 +327,7 @@ void redrawLetters(short term_maxx, short term_maxy, char playerLetters[7], uint
 	term_resetColorPair();
 }
 
-void fillPlayerLetters(vector<char> letters, char playerLetters[7])
+void fillPlayerLetters(vector<char>& letters, char playerLetters[7])
 {
 	static mt19937 mt(time(nullptr));
 	for (int i = 0, id; i<7; ++i)
@@ -346,7 +346,7 @@ int emptyLettersOnHand(char letters[7])
 {
 	int ret = 0;
 	for (int i = 0; i<7; ++i)
-		ret += letters[i]==0;
+		ret += (letters[i]==0);
 
 	return ret;
 }
@@ -354,6 +354,9 @@ int emptyLettersOnHand(char letters[7])
 int game()
 {
 	term_clear();
+
+	term_setCursorVisibility(1);
+
 	uint8_t input, x = 7, y = 7, direction = 0;
 	// direction 0 - undecided, 1-x, 2-y
 
@@ -686,7 +689,7 @@ int game()
 				if ((letters.size()+emptyLettersOnHand(playerLetters[turn]))==0)
 				{
 					// if all letters are used
-					return playerScore[0]<playerScore[1];
+					return (playerScore[0]!=playerScore[1]?(playerScore[0]<playerScore[1])+1:0);
 				}
 
 				turn = !turn;
@@ -730,8 +733,16 @@ int game()
 
 				fillPlayerLetters(letters, playerLetters[turn]);
 
+				term_moveCursor(20, 3);
+				cout << (letters.size()+emptyLettersOnHand(playerLetters[turn]));
+				if ((letters.size()+emptyLettersOnHand(playerLetters[turn]))==0)
+				{
+					// if all letters are used
+					return (playerScore[0]!=playerScore[1]?(playerScore[0]<playerScore[1])+1:0);
+				}
+
 				term_moveCursor(COORDSX(-2), COORDSY(-5));
-				cout << "                        ";
+				cout << "                         ";
 
 				turn = !turn;
 
@@ -747,11 +758,12 @@ int game()
 		}
 		term_moveCursor(COORDSX(x), COORDSY(y));
 	}
-	return playerScore[0]<playerScore[1];
+	return (playerScore[0]!=playerScore[1]?(playerScore[0]<playerScore[1])+1:0);
 }
 
 int main() // menu
 {
+	term_setCursorVisibility(0);
 init:
 	term_init();
 
@@ -813,35 +825,49 @@ init:
 		case '1':
 		{
 			result = game();
+			term_setCursorVisibility(0);
 			break;
 		}
 		case '3':
 		{
 			term_clear();
+			Sleep(100);
 			term_moveCursor(term_maxx/2-4, term_maxy/2-10);
 			cout << "Scrabble";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-8);
 			cout << "The goal of the game is to get points";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-7);
 			cout << "by using the letters you have. You win";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-6);
 			cout << "when there are no more letters left.";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-5);
 			cout << "You can move only to tiles with letters";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-4);
 			cout << "in or next to them. You can see your";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-3);
 			cout << "hand below the playfield. During your";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-2);
 			cout << "turn, you can do either:";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-1);
 			cout << "1. Place one or more letters to form";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2);
 			cout << "one or more words";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2+1);
 			cout << "2. Pass the turn and get zero points";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2+2);
 			cout << "3. Exchange some letters for new ones";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-20, term_maxy/2+3);
 			cout << "Good luck and have fun!";
 			term_getch();
@@ -852,16 +878,22 @@ init:
 			term_clear();
 			term_moveCursor(term_maxx/2-15, term_maxy/2-3);
 			cout << "Arrow keys - move on the field";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-15, term_maxy/2-2);
 			cout << "Letter - choose / place a letter";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-15, term_maxy/2-1);
 			cout << "Enter - calculate score";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-15, term_maxy/2);
 			cout << "Space - pass your turn";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-15, term_maxy/2+1);
 			cout << "Ctrl-R - exchange letters";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-15, term_maxy/2+2);
 			cout << "Backspace - return a letter";
+			Sleep(100);
 			term_moveCursor(term_maxx/2-15, term_maxy/2+3);
 			cout << "Ctrl-C - finish the game";
 			term_getch();
@@ -870,31 +902,34 @@ init:
 		case '5':
 		{
 			term_clear();
-			term_moveCursor(term_maxx/2-16, term_maxy/2-2);
-			cout << "Scrum Leader		- 		SAKostin";
+			term_moveCursor(term_maxx/2-20, term_maxy/2-2);
+			cout << "Scrum Leader	- 		SAKostin";
 			Sleep(200);
-			term_moveCursor(term_maxx/2-16, term_maxy/2-1);
+			term_moveCursor(term_maxx/2-20, term_maxy/2-1);
 			cout << "Backend Developer	- 		SVRomanchenko";
 			Sleep(200);
 
-			term_moveCursor(term_maxx/2-16, term_maxy/2+1);
+			term_moveCursor(term_maxx/2-20, term_maxy/2+1);
 			cout << "Frontend Developer	- 		OVBondarenko";
 			Sleep(200);
-			term_moveCursor(term_maxx/2-16, term_maxy/2+2);
-			cout << "Designer			-		SAChapkina";
+			term_moveCursor(term_maxx/2-20, term_maxy/2+2);
+			cout << "Designer		-		SAChapkina";
 			term_getch();
 			goto init;
 		}
 		default:
 		{
 			term_deinit();
+			term_setCursorVisibility(1);
 			return 0;
 		}
 	}
 
 	term_deinit();
+	term_setCursorVisibility(1);
 
-	cout << "Player " << result+1 << " won!\n";
+	if (result) cout << "Player " << result << " won!\n";
+	else cout << "Tie!\n";
 	term_getch();
 	return 0;
 }
