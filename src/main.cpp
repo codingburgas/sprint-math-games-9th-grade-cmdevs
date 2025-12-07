@@ -903,17 +903,17 @@ init:
 		{
 			term_clear();
 			term_moveCursor(term_maxx/2-20, term_maxy/2-2);
-			cout << "Scrum Leader	- 		SAKostin";
+			cout << "Scrum Leader       -       SAKostin";
 			Sleep(200);
 			term_moveCursor(term_maxx/2-20, term_maxy/2-1);
-			cout << "Backend Developer	- 		SVRomanchenko";
+			cout << "Backend Developer  -       SVRomanchenko";
 			Sleep(200);
 
 			term_moveCursor(term_maxx/2-20, term_maxy/2+1);
-			cout << "Frontend Developer	- 		OVBondarenko";
+			cout << "Frontend Developer -       OVBondarenko";
 			Sleep(200);
 			term_moveCursor(term_maxx/2-20, term_maxy/2+2);
-			cout << "Designer		-		SAChapkina";
+			cout << "Designer           -       SAChapkina";
 			term_getch();
 			goto init;
 		}

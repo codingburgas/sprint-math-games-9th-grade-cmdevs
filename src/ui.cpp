@@ -139,14 +139,16 @@ void term_clear()
 	term_moveCursor(0,0);
 
 	string fullLine = "";
-
 	for (int x = 0; x<term_maxx; ++x)
+	{
 		fullLine += ' ';
+	}
 
 	for (int y = 0; y<term_maxy; ++y)
 	{
 		term_moveCursor(0, y);
 		cout << fullLine;
+		Sleep(4);
 	}
 	term_moveCursor(0,0);
 }
